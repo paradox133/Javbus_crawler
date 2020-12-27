@@ -10,7 +10,10 @@ def _decode_utf8(aStr):
 
 def create_db():
     '''create a db and table if not exists'''
-    conn = sqlite3.connect("javbus.sqlite3.db")
+    dbname="javbus.sqlite3.db"
+    # dbname="TestDB.db"
+
+    conn = sqlite3.connect(dbname)
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -26,40 +29,56 @@ def create_db():
             演員      TEXT,
             類別      TEXT,
             磁力链接  TEXT,
-            无码      INTEGER);''')
+            无码      INTEGER,
+            Title     TEXT,
+            Title_ch  TEXT);''')
 
     print("Table created successfully")
     cursor.close()
     conn.commit()
     conn.close()
 
+
 def write_data(dict_jav, uncensored):
     '''write_data(dict_jav, uncensored)'''
 
-    conn = sqlite3.connect("javbus.sqlite3.db")
+    dbname="javbus.sqlite3.db"
+    # dbname="TestDB.db"
+
+    conn = sqlite3.connect(dbname)
     cursor = conn.cursor()
     #对数据解码为unicode
-    insert_data = map(_decode_utf8, (dict_jav['URL'], dict_jav['識別碼'], dict_jav['發行日期'], dict_jav['長度'], dict_jav['導演'], dict_jav['製作商'], dict_jav['發行商'], dict_jav['系列'], dict_jav['演員'], dict_jav['類別'], dict_jav['磁力链接']))
+    # insert_data =map(_decode_utf8, (dict_jav['URL'], dict_jav['識別碼'], dict_jav['發行日期'], dict_jav['長度'], dict_jav['導演'], dict_jav['製作商'], dict_jav['發行商'], dict_jav['系列'], dict_jav['演員'], dict_jav['類別'], dict_jav['磁力链接']))
+    insert_data =[dict_jav['URL'], dict_jav['識別碼'], dict_jav['發行日期'], dict_jav['長度'], dict_jav['導演'], dict_jav['製作商'], dict_jav['發行商'], dict_jav['系列'], dict_jav['演員'], dict_jav['類別'], dict_jav['磁力链接']]
+
     insert_data.append(uncensored)
+    insert_data.append(dict_jav['Title'])
+    insert_data.append(dict_jav['Title_ch'])
     #插入数据
     cursor.execute('''
-    INSERT INTO JAVBUS_DATA (URL, 識別碼, 發行日期, 長度, 導演, 製作商, 發行商, 系列, 演員, 類別, 磁力链接, 无码)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO JAVBUS_DATA (URL, 識別碼, 發行日期, 長度, 導演, 製作商, 發行商, 系列, 演員, 類別, 磁力链接, 无码,Title,Title_ch)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     ''', insert_data)
     cursor.close()
     conn.commit()
     conn.close()
 
+
+
 def check_url_not_in_table(url):
     """check_url_in_db(url),if the url isn't in the table it will return True, otherwise return False"""
+    dbname="javbus.sqlite3.db"
+    # dbname="TestDB.db"
 
-    conn = sqlite3.connect("javbus.sqlite3.db")
+    conn = sqlite3.connect(dbname)
     cursor = conn.cursor()
 
-    cursor.execute('select URL from JAVBUS_DATA where URL=?', (url.decode('utf-8'),))
+    cursor.execute('select URL from JAVBUS_DATA where URL=?', (url.encode().decode('utf-8'),))
     check = cursor.fetchall()
     cursor.close()
     conn.close()
     if check:
         return False
     return True
+
+    
